@@ -23,13 +23,19 @@ reddit = praw.Reddit(client_id = id,
                      username = user ,
                      password = pwd)
 
-print('I am ' + str(reddit.user.me()))
+# List of subscribed subreddits
+subreddits = reddit.user.subreddits()
+subs = []
 
-# TODO: list of subreddits of interest
+for sub in subreddits:
+    subs.append(sub.display_name)
 
-# TODO: find 5 posts from last week for each subreddit
+# Top 5 posts from last week for each subreddit
+for sub in subs:
+    for post in reddit.subreddit(sub).top('week', limit = 5):
+        print(post.title)
 
-# TODO: retrieve links + titles + metrics (upvotes + comments)
+# TODO: collect links + titles + metrics (upvotes + comments)
 
 # TODO: create email template sorting (alphabetically) by subreddit
 
