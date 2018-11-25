@@ -3,18 +3,20 @@
 # Weekly newsletter of top 5 posts of selected subreddits from past week
 
 import configparser
+import pprint
+import smtplib
 import praw
 
 # Use configparser to read praw.ini file
 config = configparser.ConfigParser()
 config.read('praw.ini')
 
-# Credentials
-id = config['newsreddit']['client_id']
-secret = config['newsreddit']['client_secret']
-agent = config['newsreddit']['user_agent']
-user = config['newsreddit']['username']
-pwd = config['newsreddit']['password']
+# Reddit account credentials
+id = config['reddit']['client_id']
+secret = config['reddit']['client_secret']
+agent = config['reddit']['user_agent']
+user = config['reddit']['username']
+pwd = config['reddit']['password']
 
 # Login using OAuth credentials
 reddit = praw.Reddit(client_id = id,
@@ -25,19 +27,22 @@ reddit = praw.Reddit(client_id = id,
 
 # List of subscribed subreddits
 subreddits = reddit.user.subreddits()
-subs = []
+my_subs = []
 
 for sub in subreddits:
-    subs.append(sub.display_name)
+    my_subs.append(sub.display_name)
 
+# Collect: title - author - date - num. comments - url - upvotes - upvote_ratio
 # Top 5 posts from last week for each subreddit
-for sub in subs:
-    for post in reddit.subreddit(sub).top('week', limit = 5):
-        print(post.title)
+def weekly_top(n, sub_list):
+    for sub in sub_list:
+        print('''--- \n%s \n---''' % (sub))
+        for post in reddit.subreddit(sub).top('week', limit = n):
+            print(post.title)
+            print(post.url)
+            # TODO: continue with data to collect
 
-# TODO: collect links + titles + metrics (upvotes + comments)
-
-# TODO: create email template sorting (alphabetically) by subreddit
+weekly_top(1, my_subs)
 
 # TODO: set up weekly email
 
