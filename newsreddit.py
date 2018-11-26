@@ -3,8 +3,9 @@
 # Weekly newsletter of top 5 posts of selected subreddits from past week
 
 import configparser
-import pprint
+import schedule
 import smtplib
+import time
 import praw
 
 # Use configparser to read praw.ini file
@@ -22,7 +23,7 @@ pwd = config['reddit']['password']
 reddit = praw.Reddit(client_id = id,
                      client_secret = secret,
                      user_agent = agent,
-                     username = user ,
+                     username = user,
                      password = pwd)
 
 # List of subscribed subreddits
@@ -34,17 +35,52 @@ for sub in subreddits:
 
 # Collect: title - author - date - num. comments - url - upvotes - upvote_ratio
 # Top 5 posts from last week for each subreddit
-def weekly_top(n, sub_list):
+def weekly_top(num, sub_list):
     for sub in sub_list:
         print('''--- \n%s \n---''' % (sub))
-        for post in reddit.subreddit(sub).top('week', limit = n):
+        for post in reddit.subreddit(sub).top('week', limit = num):
             print(post.title)
             print(post.url)
             # TODO: continue with data to collect
 
-weekly_top(1, my_subs)
+# weekly_top_1 = weekly_top(1, my_subs)
+
+# Email accounts setup
+from_email = config['email']['email_address']
+email_pwd = config['email']['email_password']
+server = config['email']['smtp_server']
+port = config['email']['smtp_port']
+to_email = config['email']['receiver_email']
+
+
+# Login in email
+smtp = smtplib.SMTP(server, port)
+
+smtp.ehlo()
+smtp.starttls()
+smtp.login(email, email_pwd)
+
+message = '\r\n'.join([
+  'From: %s' % (from_email),
+  'To: %s' % (to_email),
+  'Subject: Test',
+  "",
+  "A message."
+  ])
+
+# smtp.sendmail(email, 'giuseppebaldini@live.com', message)
+
+smtp.quit()
 
 # TODO: set up weekly email
+
+def test():
+    print('Testing.. ')
+
+schedule.every(5).seconds.do(test)
+
+while True:
+    schedule.run_pending()
 
 # TODO: [OPTIONAL] Email markup and formatting
 # TODO: [OPTIONAL] (GUI) customization of parameters
