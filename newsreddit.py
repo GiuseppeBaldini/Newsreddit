@@ -2,6 +2,9 @@
 
 # Weekly newsletter of top 5 posts of selected subreddits from past week
 
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+from email.header import Header
 import configparser
 import schedule
 import smtplib
@@ -39,10 +42,11 @@ def weekly_top(num, sub_list):
     feed = ""
 
     for sub in sub_list:
-        feed += ''.join(['\n--- \n', sub , '\n---\n'])
+        feed += '\n'.join(['\n', sub , '\n'])
         for post in reddit.subreddit(sub).top('week', limit = num):
             feed += '\n'.join([post.title, post.url])
-            # TODO: continue with data to collect
+            # TODO: continue with metadata to collect
+            # UnicodeEncodeError
 
     return feed
 
@@ -63,15 +67,18 @@ smtp.ehlo()
 smtp.starttls()
 smtp.login(from_email, email_pwd)
 
+msg = MIMEText(weekly_top_1, 'utf-8')
+msg = str(msg)
+print(msg)
+
 message = '\r\n'.join([
   'From: %s' % (from_email),
   'To: %s' % (to_email),
   'Subject: Test',
-  "",
-  weekly_top_1
-  ])
+  '',
+  msg])
 
-# smtp.sendmail(email, to_email, message)
+# smtp.sendmail(from_email, to_email, message)
 
 smtp.quit()
 
