@@ -51,6 +51,7 @@ def weekly_top(num, sub_list):
     return feed
 
 weekly_top_1 = weekly_top(1, my_subs)
+weekly_top_1 = str(weekly_top_1.encode('utf-8'))
 
 # Email accounts setup
 from_email = config['email_1']['email_address']
@@ -67,18 +68,14 @@ smtp.ehlo()
 smtp.starttls()
 smtp.login(from_email, email_pwd)
 
-msg = MIMEText(weekly_top_1, 'utf-8')
-msg = str(msg)
-print(msg)
-
 message = '\r\n'.join([
   'From: %s' % (from_email),
   'To: %s' % (to_email),
   'Subject: Test',
   '',
-  msg])
+  weekly_top_1])
 
-# smtp.sendmail(from_email, to_email, message)
+smtp.sendmail(from_email, to_email, message)
 
 smtp.quit()
 
