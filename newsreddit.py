@@ -1,10 +1,8 @@
 #! python3
 
-# Weekly newsletter of top 5 posts of selected subreddits from past week
+# Weekly newsletter of top posts of selected subreddits from past week
 
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
-from email.header import Header
+from unidecode import unidecode
 import configparser
 import schedule
 import smtplib
@@ -46,12 +44,13 @@ def weekly_top(num, sub_list):
         for post in reddit.subreddit(sub).top('week', limit = num):
             feed += '\n'.join([post.title, post.url])
             # TODO: continue with metadata to collect
-            # UnicodeEncodeError
 
     return feed
 
 weekly_top_1 = weekly_top(1, my_subs)
-weekly_top_1 = str(weekly_top_1.encode('utf-8'))
+weekly_top_1 = '''
+'''.join(weekly_top_1.splitlines())
+weekly_top_1 = unidecode(weekly_top_1)
 
 # Email accounts setup
 from_email = config['email_1']['email_address']
