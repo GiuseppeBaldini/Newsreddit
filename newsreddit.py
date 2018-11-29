@@ -4,9 +4,7 @@
 
 from unidecode import unidecode
 import configparser
-import schedule
 import smtplib
-import time
 import praw
 
 # Use configparser to read praw.ini file
@@ -34,23 +32,42 @@ my_subs = []
 for sub in subreddits:
     my_subs.append(sub.display_name)
 
-# Collect: title - author - date - num. comments - url - upvotes - upvote_ratio
-# Top 5 posts from last week for each subreddit
 def weekly_top(num, sub_list):
     feed = ""
 
     for sub in sub_list:
-        feed += '\n'.join(['\n', sub , '\n'])
+        feed += '\n'.join([('--' * len(sub)) , sub , ('--' * len(sub)), '\n'])
         for post in reddit.subreddit(sub).top('week', limit = num):
-            feed += '\n'.join([post.title, post.url])
-            # TODO: continue with metadata to collect
+            feed += '\n'.join([post.title, post.url, '\n'])
 
     return feed
 
 weekly_top_1 = weekly_top(1, my_subs)
+
 weekly_top_1 = '''
 '''.join(weekly_top_1.splitlines())
+
 weekly_top_1 = unidecode(weekly_top_1)
+
+# Email function
+def email(sender, password, smtp_server, smtp_port, receiver, content):
+
+    smtp = smtplib.SMTP(smtp_server, smtp_port)
+
+    smtp.ehlo()
+    smtp.starttls()
+    smtp.login(sender, password)
+
+    message = '\r\n'.join([
+      'From: %s' % (sender),
+      'To: %s' % (receiver),
+      'Subject: Newsreddit',
+      '',
+      content])
+
+    smtp.sendmail(sender, receiver, message)
+
+    smtp.quit()
 
 # Email accounts setup
 from_email = config['email_1']['email_address']
@@ -60,30 +77,8 @@ port = config['email_1']['smtp_port']
 
 to_email = config['email_2']['email_address']
 
-# Login in email
-smtp = smtplib.SMTP(server, port)
+# Send email
+def send_email():
+    email(from_email, email_pwd, server, port, to_email, weekly_top_1)
 
-smtp.ehlo()
-smtp.starttls()
-smtp.login(from_email, email_pwd)
-
-message = '\r\n'.join([
-  'From: %s' % (from_email),
-  'To: %s' % (to_email),
-  'Subject: Test',
-  '',
-  weekly_top_1])
-
-smtp.sendmail(from_email, to_email, message)
-
-smtp.quit()
-
-# TODO: set up weekly email
-
-def weekly_email():
-    pass
-
-# schedule.every(5).seconds.do(test)
-
-# TODO: [OPTIONAL] Email markup and formatting
-# TODO: [OPTIONAL] (GUI) customization of parameters
+# Set up weekly email (Task Scheduler)
