@@ -10,7 +10,7 @@ import praw
 
 # Use configparser to read praw.ini file
 config = configparser.ConfigParser()
-config.read('praw.ini')
+config.read('setup.ini')
 
 # Reddit account credentials
 id = config['reddit']['client_id']
