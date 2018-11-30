@@ -1,10 +1,11 @@
 #! python3
 
-# Weekly newsletter of top posts of selected subreddits from past week
+# Weekly newsletter of top reddit posts from previous week
 
 from unidecode import unidecode
 import configparser
 import smtplib
+import arrow
 import praw
 
 # Use configparser to read praw.ini file
@@ -28,26 +29,40 @@ reddit = praw.Reddit(client_id = id,
 # List of subscribed subreddits
 subreddits = reddit.user.subreddits()
 my_subs = []
-
 for sub in subreddits:
     my_subs.append(sub.display_name)
 
-def weekly_top(num, sub_list):
-    feed = ""
+def top_posts(frequency, num, sub_list):
+    '''
+    Get [frequency] top [num] posts of each subreddit in [sub_list] in format:
 
+    --------------
+    subreddit_name
+    --------------
+    [Post_title]
+    [Post_ url]
+
+    '''
+    feed = ""
     for sub in sub_list:
         feed += '\n'.join([('--' * len(sub)) , sub , ('--' * len(sub)), '\n'])
-        for post in reddit.subreddit(sub).top('week', limit = num):
+        for post in reddit.subreddit(sub).top(frequency, limit = num):
             feed += '\n'.join([post.title, post.url, '\n'])
 
     return feed
 
-weekly_top_1 = weekly_top(1, my_subs)
+# Get weekly top 5 posts from my subreddits
+weekly_top_5 = top_posts('week', 5, my_subs)
 
-weekly_top_1 = '''
-'''.join(weekly_top_1.splitlines())
+# To avoid encoding issues, use normal space instead of newline \n
+weekly_top_5 = '''
+'''.join(weekly_top_5.splitlines())
 
-weekly_top_1 = unidecode(weekly_top_1)
+# Unidecode transforms Unicode characters to their closest ASCII representation
+weekly_top_5 = unidecode(weekly_top_5)
+
+# Specify date to use in our email subject
+date = arrow.now('Europe/Rome').format('DD/MM/YYYY')
 
 # Email function
 def email(sender, password, smtp_server, smtp_port, receiver, content):
@@ -61,7 +76,7 @@ def email(sender, password, smtp_server, smtp_port, receiver, content):
     message = '\r\n'.join([
       'From: %s' % (sender),
       'To: %s' % (receiver),
-      'Subject: Newsreddit',
+      'Subject: Newsreddit - %s' % (date),
       '',
       content])
 
@@ -69,7 +84,7 @@ def email(sender, password, smtp_server, smtp_port, receiver, content):
 
     smtp.quit()
 
-# Email accounts setup
+# Email accounts credentials
 from_email = config['email_1']['email_address']
 email_pwd = config['email_1']['email_password']
 server = config['email_1']['smtp_server']
@@ -78,7 +93,4 @@ port = config['email_1']['smtp_port']
 to_email = config['email_2']['email_address']
 
 # Send email
-def send_email():
-    email(from_email, email_pwd, server, port, to_email, weekly_top_1)
-
-# Set up weekly email (Task Scheduler)
+email(from_email, email_pwd, server, port, to_email, weekly_top_5)
