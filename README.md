@@ -6,11 +6,11 @@ A Python script to turn your Reddit feed in an email with the top submissions fo
 
 This basic program lets you:
 
-**1.** Create a list with your favourite subreddits 
+1. Create a list with your favourite subreddits 
 
-**2.** Gets the top [n] submissions of the past [frequency] 
+2. Gets the top [n] submissions of the past [frequency] 
 
-**3.** Sends you an email with the content 
+3. Sends you an email with the content 
 
 ### Requirements
 
