@@ -1,6 +1,6 @@
 #! python3
 
-# Weekly newsletter of top reddit posts from previous week
+# Email of top reddit posts from previous week
 
 from unidecode import unidecode
 import configparser
